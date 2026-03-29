@@ -1,5 +1,6 @@
 import db from '../db/db';
 import type { User } from '../types';
+import { AppError } from '../utils/appError';
 
 export function createUser(payload: Pick<User, 'email' | 'password' | 'role'>) {
   return db
@@ -17,6 +18,6 @@ export function getUserByEmail(email: string) {
     .prepare('SELECT * FROM users WHERE email = ?')
     .get(email) as User;
 
-  if (!user) return null;
+  if (!user) throw new AppError('User not found', 404);
   return user;
 }

@@ -14,22 +14,33 @@ export type Task = {
   title: string;
   description: string;
   dueDate: number;
-  isCompleted: 0 | 1; //sqlite3 does not support boolean 0 - false, 1 - true
+  isCompleted: boolean;
   createdBy: number;
 };
 
-export type TaskDto = Omit<Task, 'isCompleted'> & {
-  isCompleted: boolean;
-};
-
 export type PaginatedTasks = {
-  data: TaskDto[];
+  data: Task[];
   pagination: {
     page: number;
     limit: number;
     total: number;
     totalPages: number;
-  }
-}
+  };
+};
 
-export * from './task-query'
+export type TaskSortField =
+  | 'id'
+  | 'dueDate'
+  | 'createdBy'
+  | 'isCompleted'
+  | 'createdAt';
+export type SortOrder = 'asc' | 'desc';
+
+export type TaskQuery = {
+  page?: number;
+  limit?: number;
+  status?: boolean;
+  author?: string;
+  sort?: TaskSortField;
+  order?: SortOrder;
+};

@@ -1,72 +1,63 @@
 import type { Response } from 'express';
 import type { AuthRequest } from '../middleware/auth.middleware';
+import type { Task, TaskQuery } from '../types';
 import {
   createTask as createTaskService,
   deleteTask as deleteTaskService,
   getAllTasks as getAllTasksService,
   searchTasksByTitle as searchTasksByTitleService,
   updateTask as updateTaskService,
+  getTasks as getTasksService
 } from '../services/task.service';
+import { AppError } from '../utils/appError';
 
-export function getTasks(req: AuthRequest, res: Response) {
-  try {
-    if (!req.user) return res.status(401).json({ message: 'Unauthorized' });
-    const tasks = getAllTasksService(req.user);
-    res.json(tasks);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
-  }
+export function getAllTasks(req: AuthRequest, res: Response) {
+  if (!req.user) throw new AppError('Unauthorized', 401);
+
+  const tasks = getAllTasksService(req.user);
+  res.json(tasks);
+}
+
+export function getTasks(req: AuthRequest<{}, {}, TaskQuery>, res: Response) {
+  if (!req.user) throw new AppError('Unauthorized', 401);
+
+  const tasks = getTasksService(req.query);
+  res.json(tasks);
 }
 
 export function createTask(req: AuthRequest, res: Response) {
-  try {
-    if (!req.user) return res.status(401).json({ message: 'Unauthorized' });
-    const task = createTaskService(req.body, req.user.id);
-    res.status(201).json(task);
-  } catch (err) {
-    console.error(err);
-    res.status(400).json({ message: 'Bad request' });
+  if (!req.user) throw new AppError('Unauthorized', 401);
+  const task = req.body as Task;
+  if (!task.title || !task.description || !task.dueDate || !task.createdAt) {
+    throw new AppError('Missing required fields', 400);
   }
+
+  const createdTask = createTaskService(task, req.user.id);
+  res.status(201).json(createdTask);
 }
 
 export function deleteTask(req: AuthRequest, res: Response) {
-  try {
-    if (!req.user) return res.status(401).json({ message: 'Unauthorized' });
-    deleteTaskService(Number(req.params.id), req.user);
-    res.json({ message: 'Task deleted' });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
-  }
+  if (!req.user) throw new AppError('Unauthorized', 401);
+
+  deleteTaskService(Number(req.params.id), req.user);
+  res.json({ message: 'Task deleted' });
 }
 
 export function updateTask(req: AuthRequest, res: Response) {
-  try {
-    if (!req.user) return res.status(401).json({ message: 'Unauthorized' });
+  if (!req.user) throw new AppError('Unauthorized', 401);
 
-    const taskId = Number(req.params.id);
-    if (!taskId)
-      return res.status(400).json({ message: 'Task ID is required' });
+  if (!req.params.id) throw new AppError('Task ID is required', 400);
+  const taskId = Number(req.params.id);
 
-    const updatedTask = updateTaskService(taskId, req.body, req.user);
-
-    res.json(updatedTask);
-  } catch (err) {
-    res.status(400).json({ message: (err as Error).message });
-  }
+  const updatedTask = updateTaskService(taskId, req.body, req.user);
+  res.json(updatedTask);
 }
 
 export function searchTasksByTitle(req: AuthRequest, res: Response) {
-  try {
-    if (!req.user) return res.status(401).json({ message: 'Unauthorized' });
-    const title = req.params.title as string;
-    if (!title) return res.status(400).json({ message: 'Bad request' });
+  if (!req.user) throw new AppError('Unauthorized', 401);
+  const title = req.params.title as string;
+  if (!title) throw new AppError('Title is required', 400);
 
-    const task = searchTasksByTitleService(title, req.user);
-    res.json(task);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
-  }
+  const task = searchTasksByTitleService(title, req.user);
+  res.json(task);
 }

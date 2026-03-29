@@ -1,6 +1,8 @@
 import db from '../db/db';
 import { toTaskDto } from '../dto/task.dto';
-import type { Task, TaskDto, User, UserRole } from '../types';
+import type { Task, TaskDto, TaskQuery, User, PaginatedTasks } from '../types';
+import { AppError } from '../utils/appError';
+import { parseTaskQuery } from '../utils/parseTaskQuery';
 
 function canModifyTask(taskCreatedBy: number, user: Partial<User>) {
   return user.role === 'admin' || user.id === taskCreatedBy;
@@ -22,21 +24,84 @@ export function getAllTasks(user: Partial<User>) {
   return tasks.map(toTaskDto);
 }
 
+export function getTasks(query: TaskQuery): PaginatedTasks {
+  const { page, limit, status, sort, order, author } = parseTaskQuery(query);
+  const offset = (page - 1) * limit;
+
+  const params: (string | number)[] = [];
+  let sql = `SELECT tasks.*, users.email as authorEmail
+             FROM tasks
+             LEFT JOIN users ON tasks.createdBy = users.id
+             WHERE 1=1`;
+
+  // фильтр по статусу
+  if (status !== undefined) {
+    sql += ` AND isCompleted = ?`;
+    params.push(status ? 1 : 0);
+  }
+
+  // фильтр по автору (частичная строка)
+  if (author !== undefined) {
+    sql += ` AND users.email LIKE ?`;
+    params.push(`%${author}%`);
+  }
+
+  sql += ` ORDER BY ${sort} ${order} LIMIT ? OFFSET ?`;
+  params.push(limit, offset);
+
+  const tasks = db.prepare(sql).all(...params) as (Task & { authorEmail: string })[];
+
+  // подсчёт total
+  const countParams: (string | number)[] = [];
+  let countSql = `SELECT COUNT(*) as count
+                  FROM tasks
+                  LEFT JOIN users ON tasks.createdBy = users.id
+                  WHERE 1=1`;
+
+  if (status !== undefined) {
+    countSql += ` AND isCompleted = ?`;
+    countParams.push(status ? 1 : 0);
+  }
+  if (author !== undefined) {
+    countSql += ` AND users.email LIKE ?`;
+    countParams.push(`%${author}%`);
+  }
+
+  const total = (db.prepare(countSql).get(...countParams) as { count: number })
+    .count;
+
+  return {
+    data: tasks.map(task => toTaskDto(task)),
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
+}
+
 export function createTask(
   task: Omit<Task, 'id' | 'createdBy' | 'isCompleted'>,
   userId: number
 ) {
+  const { title, description, dueDate, createdAt } = task;
+  if (!title || !description || !dueDate || !createdAt) {
+    throw new AppError('Missing required fields', 400);
+  }
+
   const result = db
     .prepare(
-      'INSERT INTO tasks (title, description, dueDate, isCompleted, createdBy) VALUES (?, ?, ?, 0, ?)'
+      'INSERT INTO tasks (title, description, dueDate, isCompleted, createdBy, createdAt) VALUES (?, ?, ?, 0, ?, ?)'
     )
-    .run(task.title, task.description, task.dueDate, userId);
+    .run(task.title, task.description, task.dueDate, userId, task.createdAt);
 
   return toTaskDto({
     id: result.lastInsertRowid as number,
     ...task,
     isCompleted: 0,
     createdBy: userId,
+
   });
 }
 
@@ -74,8 +139,9 @@ export function updateTask(
     .prepare('SELECT * FROM tasks WHERE id = ?')
     .get(taskId) as Task;
 
-  if (!task) throw new Error('Task not found');
-  if (!canModifyTask(task.createdBy, user)) throw new Error('Unauthorized');
+  if (!task) throw new AppError('Task not found', 404);
+  if (!canModifyTask(task.createdBy, user))
+    throw new AppError('Unauthorized', 401);
 
   const updated = {
     ...task,
@@ -103,9 +169,10 @@ export function updateTask(
 
 export function deleteTask(id: number, user: Partial<User>) {
   const task = getTaskById(id);
-  if (!task) throw new Error('Task not found');
+  if (!task) throw new AppError('Task not found', 404);
 
-  if (!canModifyTask(task.createdBy, user)) throw new Error('Unauthorized');
+  if (!canModifyTask(task.createdBy, user))
+    throw new AppError('Unauthorized', 401);
 
   db.prepare('DELETE FROM tasks WHERE id = ?').run(id);
   return { id };

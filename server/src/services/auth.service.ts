@@ -3,6 +3,7 @@ import db from '../db/db';
 import type { User } from '../types';
 import { generateAccessToken, generateRefreshToken } from '../utils/jwt';
 import { getUserByEmail } from './user.service';
+import { AppError } from '../utils/appError';
 
 export async function login({
   email,
@@ -12,10 +13,10 @@ export async function login({
   password: string;
 }) {
   const user: User | null = getUserByEmail(email);
-  if (!user) throw new Error('User not found');
+  if (!user) throw new AppError('User not found', 404);
 
   const isValid = await bcrypt.compare(password, user.password);
-  if (!isValid) throw new Error('Invalid password');
+  if (!isValid) throw new AppError('Invalid password', 401);
 
   const accessToken = generateAccessToken(user);
   const refreshToken = generateRefreshToken(user);

@@ -3,14 +3,5 @@
   "trailingComma": "es5",
   "semi": true,
   "singleQuote": true,
-  "htmlWhitespaceSensitivity": "ignore",
-  "importOrder": [
-    "^[^@./][^/]*$",
-    "^@[^/]+/.*$",
-    "^@/.*$",
-    "^\\.\\./.*$",
-    "^\\./.*$"
-  ],
-  "importOrderSortSpecifiers": true,
-  "plugins": ["@trivago/prettier-plugin-sort-imports"]
+  "htmlWhitespaceSensitivity": "ignore"
 }

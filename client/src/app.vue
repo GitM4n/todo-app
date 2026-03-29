@@ -1,12 +1,8 @@
-<script setup lang="ts">
-
-</script>
-
 <template>
   <div>
     <NuxtLayout>
       <NuxtPage />
+      <BaseToast />
     </NuxtLayout>
   </div>
 </template>
-
