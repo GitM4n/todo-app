@@ -5,7 +5,6 @@ import {
   createTask as createTaskService,
   deleteTask as deleteTaskService,
   getAllTasks as getAllTasksService,
-  searchTasksByTitle as searchTasksByTitleService,
   updateTask as updateTaskService,
   getTasks as getTasksService
 } from '../services/task.service';
@@ -53,11 +52,3 @@ export function updateTask(req: AuthRequest, res: Response) {
   res.json(updatedTask);
 }
 
-export function searchTasksByTitle(req: AuthRequest, res: Response) {
-  if (!req.user) throw new AppError('Unauthorized', 401);
-  const title = req.params.title as string;
-  if (!title) throw new AppError('Title is required', 400);
-
-  const task = searchTasksByTitleService(title, req.user);
-  res.json(task);
-}

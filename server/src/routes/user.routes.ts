@@ -1,9 +1,10 @@
-import { Router } from "express";
-import { getUser } from "../controllers/user.controller";
-import { asyncHandler } from "../utils/asyncHandler";
+import { Router } from 'express';
+import { getUser, getUserByEmail } from '../controllers/user.controller';
+import { asyncHandler } from '../utils/asyncHandler';
 
 const router = Router();
 
-router.post("/user", asyncHandler(getUser));
+router.get('/', asyncHandler(getUser));
+router.post('/', asyncHandler(getUserByEmail));
 
 export default router;

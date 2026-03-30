@@ -10,3 +10,4 @@ export interface TaskQuery {
   sort?: TaskSortField;
   order?: SortOrder;
 }
+

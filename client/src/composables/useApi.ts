@@ -7,7 +7,7 @@ import {
   type RequestHeaderOption,
   type RequestQueryOption,
   apiRequest,
-} from '@/plugins/apiRequest';
+} from '@/utils/apiRequest';
 
 export function useApi() {
   const { show } = useToast();

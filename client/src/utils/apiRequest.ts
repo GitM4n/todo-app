@@ -21,14 +21,17 @@ export type HttpRequestOptions = {
   headers?: RequestHeaderOption;
 };
 
+export const httpUrl = {
+  apiBaseUrl: '',
+};
+
 export async function apiRequest<TRes = unknown>(
   method: HttpMethod,
   endpoint: string,
   { query, body, headers: customHeaders }: HttpRequestOptions = {}
 ): Promise<TRes> {
-  const { apiBaseUrl } = useRuntimeConfig().public;
+  const url = new URL(endpoint, httpUrl.apiBaseUrl);
 
-  const url = new URL(endpoint, apiBaseUrl);
   if (query)
     url.search = new URLSearchParams(
       Object.fromEntries(Object.entries(query).map(([k, v]) => [k, String(v)]))
@@ -45,7 +48,7 @@ export async function apiRequest<TRes = unknown>(
     payload = JSON.stringify(body);
   }
 
-  const response = await fetch(url.toString(), {
+  const response = await fetch(url, {
     method,
     headers,
     body: payload,

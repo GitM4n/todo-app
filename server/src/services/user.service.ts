@@ -13,7 +13,7 @@ export function getAllUsers() {
   return users;
 }
 
-export function getUserByEmail(email: string) {
+export function getUserByEmail(email?: string) {
   const user = db
     .prepare('SELECT * FROM users WHERE email = ?')
     .get(email) as User;

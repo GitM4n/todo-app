@@ -1,4 +1,4 @@
-import { useStorage, useTimeoutFn } from '@vueuse/core';
+import { useTimeoutFn } from '@vueuse/core';
 
 type ToastType = 'success' | 'error' | 'info';
 
@@ -10,7 +10,7 @@ export type ToastItem = {
 
 const INTERVAL_MS = 3000;
 
-const toasts = useStorage<ToastItem[]>('app-toasts', []);
+const toasts = ref<ToastItem[]>([]);
 
 export function useToast() {
   const show = (message: string, type: ToastType = 'info') => {

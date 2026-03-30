@@ -1,45 +1,45 @@
 import { defineStore } from 'pinia';
 import { useLocalStorage } from '@vueuse/core';
-import type { User } from '@/types';
 
 export const JWT_STORAGE_KEY = 'jwt';
 
 export const useAuthStore = defineStore('auth', () => {
   const jwt: Ref<string | null> = useLocalStorage(JWT_STORAGE_KEY, null);
-  const user = ref<User | null>(null);
-  const loading = ref(false);
+
+  const fetching = ref(false);
+
+  const isLoggedIn = computed(() => !!jwt.value);
+
 
   const api = useApi();
   const toast = useToast();
 
-  const login = async (email: string, password: string) => {
-    loading.value = true;
+
+
+  async function login(email: string, password: string) {
+    fetching.value = true;
     try {
       const data = await api.post<{
         accessToken: string;
         refreshToken: string;
-      }>('/auth/login', { email, password });
-      jwt.value = data.accessToken;
+      }>('auth/login', { email, password });
 
-      user.value = await api.get<User>('/user');
+      jwt.value = data.accessToken;
 
       toast.show('Login successful', 'success');
       navigateTo('/');
     } catch (e) {
       console.error(e);
     } finally {
-      loading.value = false;
+      fetching.value = false;
     }
-  };
+  }
 
-  const logout = () => {
+  async function logout() {
     jwt.value = null;
-    user.value = null;
     toast.show('Logged out', 'info');
     navigateTo('/login');
-  };
+  }
 
-  const isLoggedIn = computed(() => !!jwt.value);
-
-  return { jwt, user, loading, login, logout, isLoggedIn };
+  return { jwt, fetching, login, logout, isLoggedIn};
 });

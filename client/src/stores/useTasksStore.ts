@@ -9,41 +9,62 @@ export const useTasksStore = defineStore('tasks', () => {
     total: 0,
     totalPages: 0,
   });
-  const isLoading = ref(false);
+  const isFetching = ref(false);
 
   const api = useApi();
-  // const toast = useToast();
+  const toast = useToast();
 
   async function getTasks(filters?: TaskQuery) {
-    isLoading.value = true;
+    isFetching.value = true;
 
     try {
-      let query:Partial<TaskQuery> = {
+      let query: Partial<TaskQuery> = {
         page: filters?.page ?? pagination.value.page,
         limit: filters?.limit ?? pagination.value.limit,
       };
 
-      if(filters) query = { ...query, ...filters };
+      if (filters) query = { ...query, ...filters };
 
-      const response = await api.get<PaginatedTasks>('/tasks', query);
+      const response = await api.get<PaginatedTasks>('tasks', query);
       tasks.value = response.data;
       pagination.value = response.pagination;
     } catch (e) {
       console.error(e);
     } finally {
-      isLoading.value = false;
+      isFetching.value = false;
     }
   }
 
-  // async function createTask(task: Task) {
-  //   try {
-  //     const createdTask = await api.post<Task>('/tasks', task);
+  async function getMyTasks(filters?: Omit<TaskQuery, 'author'>) {
+    const {user} = await useCurrentUser();
+    if (!user.value) return;
+    await getTasks({ author: user.value.email, ...filters });
+  }
 
-  //     toast.show('Task created', 'success');
-  //   } catch (e) {
-  //     console.error(e);
-  //   }
-  // }
+  async function getAllTasks(filters?: TaskQuery) {
+    await getTasks(filters);
+  }
 
-  return { tasks, pagination, isLoading, getTasks };
+  async function addTask(task: Omit<Task, 'id' | 'createdBy' | 'isCompleted'>) {
+    try {
+      const createdTask = await api.post<Task>('tasks', task);
+      if (createdTask) {
+        toast.show('Task created', 'success');
+
+        await getMyTasks();
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  return {
+    tasks,
+    pagination,
+    isFetching,
+    getTasks,
+    addTask,
+    getMyTasks,
+    getAllTasks,
+  };
 });

@@ -1,6 +1,11 @@
+
 * {
   padding: 0;
   margin: 0;
   width: auto;
   height: auto;
+}
+
+ul, li {
+  list-style: none;
 }

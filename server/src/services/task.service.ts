@@ -110,26 +110,6 @@ export function getTaskById(id: number) {
   return task ? toTaskDto(task) : null;
 }
 
-export function searchTasksByTitle(title: string, user: Partial<User>) {
-  let tasks: Task[];
-
-  const query = `%${title}%`;
-
-  if (user.role === 'admin') {
-    tasks = db
-      .prepare('SELECT * FROM tasks WHERE title LIKE ? COLLATE NOCASE')
-      .all(query) as Task[];
-  } else {
-    tasks = db
-      .prepare(
-        'SELECT * FROM tasks WHERE title LIKE ? COLLATE NOCASE AND createdBy = ?'
-      )
-      .all(query, user.id) as Task[];
-  }
-
-  return tasks.map(toTaskDto);
-}
-
 export function updateTask(
   taskId: number,
   taskData: Partial<Omit<TaskDto, 'id'>>,

@@ -1,7 +1,12 @@
 export default defineNuxtConfig({
   srcDir: './src',
+  ssr: false,
   devtools: { enabled: true },
-  css: ['bootstrap/dist/css/bootstrap.min.css', '~/assets/css/main.css'],
+  css: [
+    'bootstrap-icons/font/bootstrap-icons.css',
+    'bootstrap/dist/css/bootstrap.min.css',
+    '~/assets/css/main.css',
+  ],
   modules: ['@nuxt/eslint', '@pinia/nuxt'],
   runtimeConfig: {
     public: {
