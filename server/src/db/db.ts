@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS tasks (
   isCompleted INTEGER DEFAULT 0,
   createdBy INTEGER NOT NULL,
   createdAt INTEGER,
-  FOREIGN KEY (createdBy) REFERENCES users(id)
+  FOREIGN KEY (createdBy) REFERENCES users(id) ON DELETE CASCADE
 );
 `);
 
@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS refresh_tokens (
   token TEXT UNIQUE,
   userId INTEGER,
   createdAt INTEGER,
-  FOREIGN KEY (userId) REFERENCES users(id)
+  FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
 );
 `);
 

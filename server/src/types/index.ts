@@ -8,6 +8,22 @@ export type User = {
   createdAt: number;
 };
 
+export type UserDto = Omit<User, 'password'>;
+
+export type TaskRow = {
+  taskId: number;
+  title: string;
+  description: string;
+  dueDate: number;
+  isCompleted: 0 | 1;
+  taskCreatedAt: number;
+
+  userId: number;
+  userEmail: string;
+  userRole: 'user' | 'admin';
+  userCreatedAt: number;
+};
+
 export type Task = {
   id: number;
   createdAt: number;
@@ -15,7 +31,7 @@ export type Task = {
   description: string;
   dueDate: number;
   isCompleted: 0 | 1; //sqlite3 does not support boolean 0 - false, 1 - true
-  createdBy: number;
+  createdBy: Omit<User, 'password'>;
 };
 
 export type TaskDto = Omit<Task, 'isCompleted'> & {

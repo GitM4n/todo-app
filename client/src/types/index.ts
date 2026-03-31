@@ -15,7 +15,7 @@ export type Task = {
   description: string;
   dueDate: number;
   isCompleted: boolean;
-  createdBy: number;
+  createdBy: User;
 };
 
 export type PaginatedTasks = {

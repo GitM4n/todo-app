@@ -4,18 +4,11 @@ import type { Task, TaskQuery } from '../types';
 import {
   createTask as createTaskService,
   deleteTask as deleteTaskService,
-  getAllTasks as getAllTasksService,
   updateTask as updateTaskService,
-  getTasks as getTasksService
+  getTasks as getTasksService,
+  getTaskById as getTaskByIdService,
 } from '../services/task.service';
 import { AppError } from '../utils/appError';
-
-export function getAllTasks(req: AuthRequest, res: Response) {
-  if (!req.user) throw new AppError('Unauthorized', 401);
-
-  const tasks = getAllTasksService(req.user);
-  res.json(tasks);
-}
 
 export function getTasks(req: AuthRequest<{}, {}, TaskQuery>, res: Response) {
   if (!req.user) throw new AppError('Unauthorized', 401);
@@ -52,3 +45,9 @@ export function updateTask(req: AuthRequest, res: Response) {
   res.json(updatedTask);
 }
 
+export function getTaskById(req: AuthRequest, res: Response) {
+  if (!req.user) throw new AppError('Unauthorized', 401);
+
+  const task = getTaskByIdService(Number(req.params.id));
+  res.json(task);
+}

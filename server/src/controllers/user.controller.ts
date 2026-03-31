@@ -1,16 +1,15 @@
-import type { Request, Response } from 'express';
+import type { Response } from 'express';
 import type { AuthRequest } from '../middleware/auth.middleware';
-import { getUserByEmail as getUserByEmailService } from '../services/user.service';
+import { getUserById as getUserByIdService } from '../services/user.service';
 
 export async function getUser(req: AuthRequest, res: Response) {
-  console.log(req.user);
-  const user = getUserByEmailService(req.user?.email);
+  const user = getUserByIdService(req.user?.id);
   res.json(user);
 }
 
-export async function getUserByEmail(req: AuthRequest, res: Response) {
-  const { email } = req.body;
+export async function getUserById(req: AuthRequest, res: Response) {
+  const { id } = req.params;
 
-  const user = getUserByEmailService(email);
+  const user = getUserByIdService(id);
   res.json(user);
 }

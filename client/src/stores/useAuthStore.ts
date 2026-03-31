@@ -1,20 +1,27 @@
 import { defineStore } from 'pinia';
 import { useLocalStorage } from '@vueuse/core';
+import type { User } from '@/types';
 
 export const JWT_STORAGE_KEY = 'jwt';
 
 export const useAuthStore = defineStore('auth', () => {
   const jwt: Ref<string | null> = useLocalStorage(JWT_STORAGE_KEY, null);
+  const user = ref<User | null>(null);
 
   const fetching = ref(false);
 
   const isLoggedIn = computed(() => !!jwt.value);
 
-
   const api = useApi();
   const toast = useToast();
 
-
+  async function getUser() {
+    try {
+      user.value = await api.get<User>('user');
+    } catch (e) {
+      console.error(e);
+    }
+  }
 
   async function login(email: string, password: string) {
     fetching.value = true;
@@ -25,6 +32,7 @@ export const useAuthStore = defineStore('auth', () => {
       }>('auth/login', { email, password });
 
       jwt.value = data.accessToken;
+      await getUser();
 
       toast.show('Login successful', 'success');
       navigateTo('/');
@@ -41,5 +49,13 @@ export const useAuthStore = defineStore('auth', () => {
     navigateTo('/login');
   }
 
-  return { jwt, fetching, login, logout, isLoggedIn};
+  return {
+    jwt,
+    fetching,
+    login,
+    logout,
+    isLoggedIn,
+    getUser,
+    user,
+  };
 });

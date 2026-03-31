@@ -1,6 +1,12 @@
 <template>
-  <div class="overlay d-flex justify-content-center align-items-center">
+  <div
+    class="overlay d-flex justify-content-center align-items-center"
+    role="status"
+    aria-live="polite"
+    aria-busy="true"
+  >
     <i class="bi bi-arrow-repeat spin"></i>
+    <span class="visually-hidden">Loading, please wait</span>
   </div>
 </template>
 

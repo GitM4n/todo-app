@@ -1,16 +1,25 @@
-import type { TaskQuery, TaskSortField, SortOrder } from '../types/task-query';
+import type {
+  ParsedTaskQuery,
+  SortOrder,
+  TaskQuery,
+  TaskSortField,
+} from '../types/task-query';
 import { AppError } from './appError';
 
-export function parseTaskQuery(query: TaskQuery) {
+export function parseTaskQuery(query: TaskQuery): ParsedTaskQuery {
   const page = Number(query.page) || 1;
   const limit = Number(query.limit) || 10;
-
   const status =
-    query.status !== undefined ? query.status === 'true' : undefined;
+    query.status === 'true' ? 1 : query.status === 'false' ? 0 : undefined;
+  const author = query.author === 'undefined' ? undefined : query.author;
 
-  const author = query.author || undefined;
-
-  const allowedSort: TaskSortField[] = ['id', 'dueDate', 'createdBy', 'isCompleted', 'createdAt'];
+  const allowedSort: TaskSortField[] = [
+    'id',
+    'dueDate',
+    'createdBy',
+    'isCompleted',
+    'createdAt',
+  ];
   const sort = allowedSort.includes(query.sort as TaskSortField)
     ? (query.sort as TaskSortField)
     : 'id';
